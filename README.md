@@ -1,1 +1,2 @@
-##My Set up\nHere are my hyprland + waybar config files.
+## My Set up
+Here are my hyprland + waybar config files.
