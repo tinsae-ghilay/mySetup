@@ -1,0 +1,245 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrains Mono";
+    font-weight: bold;
+    font-size: 15px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(21, 18, 27, 0.8);
+    color: #cdd6f4;
+}
+
+tooltip {
+    background: black;
+    border-radius: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: dodgerblue;
+    opacity: 0.9;
+}
+
+#workspaces button {
+    padding: 0 7px;
+    margin-right: 2px;
+    margin-left: 2px;
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+}
+
+#workspaces button.active {
+    color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.5);
+    /*border-bottom: 1px solid #047fff;*/
+}
+
+#workspaces button.focused {
+    color: white;
+    background: #eba0ac;
+}
+
+#workspaces button.urgent {
+    color: #11111b;
+    background: #a6e3a1;
+    border-radius: 10px;
+}
+
+
+#workspaces button:hover {
+    background: #11111b;
+}
+#custom-recording,
+#custom-power_profile,
+#custom-moon,
+#custom-wallpaper,
+#window,
+#clock,
+#battery,
+#pulseaudio,
+#network,
+#custom-swaync,
+#custom-temperature,
+#custom-memory,
+#workspaces,
+#tray,
+#custom-weather,
+#custom-swaync,
+#custom-screen,
+#backlight {
+    color: #89b4fa;
+    background: transparent;
+    opacity: 0.8;
+    padding: 0px 10px;
+    border: 1px solid #047fff;
+}
+
+#custom-power_profile:hover,
+#custom-weather:hover,
+#custom-moon:hover,
+#custom-wallpaper:hover,
+#window:hover,
+#clock:hover,
+#battery:hover,
+#pulseaudio:hover,
+#network:hover,
+#custom-swaync:hover,
+#custom-temperature:hover,
+#custom-memory:hover,
+#workspaces button:hover,
+#custom-menu:hover,
+#custom-power:hover,
+#custom-recording:hover,
+#custom-screen:hover,
+#backlight:hover {
+    color: white;
+    background: #047fff;
+}
+
+#custom-weather{
+	margin:0 5px;
+	padding:0 7px;
+	border-radius:10px;
+}
+
+#custom-memory {
+    color: #eba0ac;
+}
+
+#custom-temperature {
+    border-radius: 10px 0px 0px 10px;
+}
+
+#custom-temperature.critical {
+    color: red;
+}
+
+#custom-power,
+#custom-menu {
+    color: #89b4fa;
+    background-color: #1f2021;
+    padding: 0px 5px;
+    border: 1px solid #047fff;
+}
+
+#custom-recording,
+#custom-swaync,
+#custom-Screen{
+	color:white;
+ 	border-top: 1px solid #047fff;
+ 	border-bottom: 1px solid #047fff;
+ 	border-left:none;
+ 	border-right:none;
+ 	padding:0 10px;
+	font-size:24;
+}
+
+#custom-swaync {
+    border-radius: 0 10px 10px 0;
+    border-right: 1px solid #047fff;
+}
+
+#custom-spotify {
+	margin-left:10;
+	
+}
+
+#custom-power {
+    border-right: 0px;
+    border-radius: 10px 0 0 10px;
+}
+#custom-menu {
+    font-size: 22;
+    border-left: 0px;
+    border-radius: 0 10px 10px 0;
+}
+
+#backlight {
+    border-radius: 10px 0px 0px 10px;
+    margin-left:5px;
+}
+
+#tray {
+    border-radius: 10px 0 0 10px;
+    border-right:none;
+}
+
+
+#workspaces {
+    background: #1e1e2e;
+    border-radius: 10px;
+    margin-left: 10px;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+#custom-power_profile {
+    color: #a6e3a1;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+#window {
+    border-radius: 10px;
+    margin-left: 60px;
+    margin-right: 60px;
+}
+
+#clock {
+    color: #89b4fa;
+    border-radius: 10px 0 0 10px;
+    margin-left: 5px;
+    border-right:none;
+}
+
+#pulseaudio {
+    color: #89b4fa;
+    border-left: none;
+    border-right: 1px solid #047fff;
+}
+
+#pulseaudio.microphone {
+    border-radius: 0px 10px 10px 0px;
+}
+
+#custom-Screen.active{
+	color:red;
+}
+#custom-recording.active{
+   color:red;
+}
+
+
+#battery {
+    color: #a6e3a1;
+    border-radius: 0 10px 10px 0;
+    margin-right: 5px;
+}
+#battery.warning {
+    color: #ffa500;
+}
+#battery.critical {
+    color: red;
+}
+#custom-moon {
+    border-radius: 0px 10px 10px 0px;
+    border-right: 0px;
+    margin-left: 0px;
+}
+
+#custom-spotify{
+	color:#047fff;
+}
+
+
+menu {
+	border-radius: 10px;
+	padding:3px;
+	border: 1px solid #047fff;
+	background: rgba(0,0,0,0.8);
+}
+menuitem {
+	border-radius: 5px;
+	margin:5px;
+}

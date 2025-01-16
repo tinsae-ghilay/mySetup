@@ -1,0 +1,16 @@
+{
+    "workbench.statusBar.visible": false,
+    "editor.minimap.enabled": false,
+    "window.menuBarVisibility": "toggle",
+    "editor.fontSize": 16,
+    "editor.fontFamily": "'JetBrains Mono','Droid Sans Mono', 'monospace', monospace",
+    "editor.fontLigatures": true,
+    "editor.lineHeight": 1.5,
+    "editor.tabSize": 4,
+    "workbench.colorTheme": "Default Dark+",
+    "workbench.iconTheme": "symbols",
+    "workbench.productIconTheme": "material-product-icons",
+    "editor.inlayHints.fontSize": 14,
+    "editor.detectIndentation": false,
+    "git.autofetch": true,
+}

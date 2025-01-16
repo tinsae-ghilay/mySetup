@@ -1,0 +1,11 @@
+mode=drun
+width=500
+height=550
+allow_images=true
+image_size=34
+term=kitty
+insensitive=true
+location=center
+no_actions=true
+prompt=Search
+monitor=eDP-1

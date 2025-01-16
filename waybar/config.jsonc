@@ -1,0 +1,206 @@
+{
+  "layer": "top",
+  "position": "top",
+  "mod": "dock",
+  "exclusive": true,
+  "passthrough": false,
+  "gtk-layer-shell": true,
+  "height": 30,
+  "modules-left": [
+     	"custom/menu",
+    	"custom/weather",
+	"custom/spotify",
+  ],
+  "modules-center": ["hyprland/workspaces",],
+  "modules-right": [
+    "tray",
+    "custom/recording",
+    "custom/swaync",
+    "custom/temperature",
+    "custom/memory",
+    "backlight",
+    "pulseaudio",
+    "pulseaudio#microphone",
+    "clock",
+    "battery",
+    "custom/power",
+  ],
+  "hyprland/workspaces": {
+    	"format": "{name}",
+    	"disable-scroll":false,
+	"on-click": "activate",
+	"active-only": true,
+    	"persistent-workspaces": {
+		"eDP-1": [1, 2, 3, 4, 5], // 1 -5 in monitor 1
+      		"HDMI-A-1":[6, 7, 8, 9, 10], // 6-10 in monitor 2
+   	 },
+  },
+  
+  "custom/weather": {
+    "format": "{}°",
+    "tooltip": true,
+    "interval": 3600,
+    "exec": "wttrbar --location pfaffenhofen",
+    "return-type": "json"
+  },
+
+  "custom/wall": {
+    "format": "{}",
+    "interval": 60,
+    "exec": "r-wall & ",
+    "format-alt": "r-wall &",
+  },
+
+  "custom/memory": {
+    "tooltip": true,
+    "format": "🧠 {}",
+    "interval": 30,
+    "exec": "memory",
+  },
+  "tray": {
+    "icon-size": 18,
+    "spacing": 10,
+    "show-passive-items":true,
+    
+  },
+  "backlight": {
+    "device": "intel_backlight",
+    "format": "<span size='x-large' rise='-1500' >{icon}</span> {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+    "on-scroll-up": "brightnessctl -q set 1%+",
+    "on-scroll-down": "brightnessctl -q set 1%-",
+  },
+  "battery": {
+    "states": {
+      "good": 95,
+      "warning": 30,
+      "critical": 15,
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": " {capacity}%",
+    "format-plugged": " {capacity}%",
+    "format-alt": "{time} {icon}",
+    "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+  },
+  "pulseaudio": {
+    "format": "<span size='x-large' rise='-1500' >{icon}</span> {volume}%",
+    "tooltip": false,
+    "format-muted": " Muted",
+    "on-click": "pamixer -t",
+    "on-scroll-up": "pamixer -i 5",
+    "on-scroll-down": "pamixer -d 5",
+    "scroll-step": 100,
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", "", ""],
+    },
+  },
+  "pulseaudio#microphone": {
+    "format": "{format_source}",
+    "format-source": "<span size='x-large' rise='-1500' ></span> {volume}%",
+    "format-source-muted": " Muted",
+    "on-click": "pamixer --default-source -t",
+    "on-scroll-up": "pamixer --default-source -i 5",
+    "on-scroll-down": "pamixer --default-source -d 5",
+    "scroll-step": 5,
+  },
+  "network": { // I use nm-applet
+    "format-wifi": "  {signalStrength}%",
+    "format-ethernet": "{ipaddr}/{cidr}",
+    "tooltip-format": "{essid} {signalStrength}%",
+    "format-linked": "{ifname} (No IP)",
+    "format-disconnected": "Disconnected ⚠",
+  },
+  "bluetooth": { // I use blueman-applet
+    "format": " {status}",
+    "format-disabled": " off", // an empty format will hide the module
+    "format-connected": " {num_connections}",
+    "tooltip-format": "{device_alias}",
+    "tooltip-format-connected": " {device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}",
+  },
+  "clock": {
+    "format": "{:%H:%M}",
+    "tooltip-format": "<tt><big>{calendar}</big></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-click-right": "mode",
+      "format": {
+        "months": "<span color='#047fff'><b>{}</b></span>",
+        "days": "<span color='#ffffff'><b>{} </b></span>",
+        "weeks": "<span color='#89b4fa'><b>W{} </b></span>",
+        "weekdays": "<span color='#89b4fa'><b>{} </b></span>",
+        "today": "<span color='#047fff'><b><u>{}</u></b></span>",
+      },
+    },
+  },
+  "custom/power": {
+    "format": " ⏻ ",
+    "tooltip-format": "Power",
+    "menu": "on-click",
+    "menu-file": "~/.config/waybar/power_menu.xml",
+    "menu-actions": {
+      "shutdown": "shutdown now",
+      "reboot": "reboot",
+      "suspend": "systemctl suspend",
+      "hibernate": "systemctl hibernate",
+    },
+  },
+  "custom/menu": {
+    "format": " 󰣇 ",
+    "tooltip-format": "Power",
+    "on-click": "~/.config/waybar/menu.sh",
+  },
+  
+  "custom/recording": {
+    "format": "",
+    "exec": "~/.config/waybar/recorder_status.sh",
+    "return-type": "json",
+    "interval":1,
+    "format-tooltip": "{tooltip}",    
+    "on-click": "pkill wf-recorder",
+  },
+
+  "custom/Screen": { // this works only when I only have one screen :( need implementing display selection dialog
+    "format": "[o]",
+    "exec": "~/.config/waybar/recorder_status.sh",
+    "return-type": "json",
+    "interval":1,
+    "format-tooltip": "{tooltip}",
+    "menu": "on-click", // Display the menu on click when `wf-recorder` is not running
+    "menu-file": "~/.config/waybar/screen_recorder_menu.xml", // The XML menu to open
+    "menu-actions": {
+      "record_screen": "~/.config/waybar/shot.sh record screen",
+      "record_region": "~/.config/waybar/shot.sh record region",
+      "snap_screen": "~/.config/waybar/shot.sh snap screen",
+      "snap_region": "~/.config/waybar/shot.sh snap region",
+    },
+  },
+  "custom/swaync": {
+	    "format": "",
+	    "on-click": "swaync-client -t -sw",
+	    "on-click-middle": "swaync-client -C",
+	    "on-double-click": "swaync-client -d"
+    },
+ "custom/spotify": {
+        "exec": "python3 ~/mediaplayer.py --player spotify",
+        "format": "<span size='x-large' rise='-1500' ></span> {}",
+        "rotate": 0,
+        "return-type": "json",
+        "on-click": "playerctl play-pause --player spotify",
+        "on-click-right": "playerctl next --player spotify",
+        "on-click-middle": "playerctl previous --player spotify",
+        "on-scroll-up": "volumecontrol.sh -p spotify i",
+        "on-scroll-down": "volumecontrol.sh -p spotify d",
+        "max-length": 25,
+        "escape": true,
+        "tooltip": true
+    },
+}

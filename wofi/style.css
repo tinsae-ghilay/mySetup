@@ -1,0 +1,42 @@
+/* for noobs like me, just copy and paste this into ~/.config/wofi/style.css. that is if you can do that... (no judging m8) */
+#input {
+    margin: 5px;
+    border: 1px solid rgba(30, 144, 255, 0.8);
+    color: #1e90ff;
+    background-color: #444444;
+}
+
+#inner-box {
+    margin: 5px;
+    border: none;
+    background-color: transparent;
+}
+
+#outer-box {
+    margin: 5px;
+}
+
+#scroll {
+    margin: 0px;
+    border: none;
+}
+
+#text {
+    margin: 5px;
+    color: white;
+}
+#entry {
+    background-color: transparent;
+}
+
+#entry:selected {
+    background-color: rgba(0, 0, 0, 0.9);
+    border: 1px solid #1e90ff;
+    border-radius: 5px; /* 10px radius for rounded corners */
+}
+/* Add rounded corners to the Wofi window */
+window {
+    background-color: rgba(0, 0, 0, 0.9);
+    border: 1px solid #1e90ff;
+    border-radius: 10px; /* 10px radius for rounded corners */
+}
