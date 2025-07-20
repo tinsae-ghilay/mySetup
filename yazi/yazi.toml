@@ -1,0 +1,34 @@
+# yazi.toml
+[mgr]
+show_hidden = false
+
+[opener]
+
+pdff = [
+	{ run = 'evince "$@"', orphan = true}
+	]
+
+edit = [
+	{run='nvim "$@"', block=true, desc = 'editor'}
+	]
+
+open = [
+	{ run = 'xdg-open "$@"', desc = "Open" },
+	]
+play = [
+	{ run = 'totem "$@"', orphan = true}
+]
+
+view = [
+	{run = 'loupe "$@"', orphan=true}
+]
+
+[open]
+rules=[
+	{mime = "application/pdf", use = "pdff" },
+	{mime = "text/*", use = "edit" },
+	{mime = "video/*", use = "play" },
+	{mime = "application/json", use = "edit" },
+	{mime = "image/*", use = "view" }
+
+]
