@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # --- Arch Linux Hyprland Installation Script ---
 # This script automates the post-manual-partitioning and internet connection steps
