@@ -17,8 +17,30 @@
 #    # If you have a separate /home:
 #    # mkdir /mnt/home; mount /dev/sda3 /mnt/home
 # 5. Connect to the internet (e.g., wifi-menu or iwctl).
-# 6. (Optional but recommended) Update mirrorlist on LIVE ENVIRONMENT:
-#    pacman -S reflector
+echo "Start installation script? Y not case sensitive for yes, anything else for no"
+read response
+# convert to lower case
+response = ${response,,}
+if [[ "$response" != "y"]] ; then
+    echo "ok, exiting."
+    exit 0
+if 
+# Check if reflector is installed
+if ! command -v reflector >/dev/null 2>&1; then
+    echo "reflector is not installed. Installing..."
+    
+    # since this is going to be used in a ive env. no need and cant use sudo
+    pacman -Sy --noconfirm reflector
+
+    # You can handle errors if the install fails
+    if [ $? -ne 0 ]; then
+        echo "Failed to install reflector"
+        exit 1
+    fi
+else
+    echo "reflector is already installed."
+fi
+
 reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 # ---------------------------------------------------------------------------------
 
@@ -36,12 +58,12 @@ echo "Installing base system and essential packages..."
 # Core packages for a functioning Arch system with initial drivers and networking.
 # We are using xf86-video-nouveau for NVIDIA for potential suspend benefits.
 PACSTRAP_PKGS=(
-    base linux linux-firmware intel-ucode \
+    base linux linux-firmware intel-ucode sof-firmware\
     mesa nvidia nvidia-utils lib32-nvidia-utils vulkan-intel intel-media-driver \
     networkmanager nm-connection-editor network-manager-applet \
     sudo dosfstools \
     man-db man-pages texinfo \
-    vim nano git efibootmgr # efibootmgr is needed by bootctl
+    neovim nano git gcc gdb efibootmgr # efibootmgr is needed by bootctl
 )
 
 pacstrap /mnt "${PACSTRAP_PKGS[@]}" || { echo "Pacstrap failed. Exiting."; exit 1; }
@@ -112,7 +134,7 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
         dunst \
         kitty \
         hyprpolkitagent \
-        wofi \
+        wofi wlogout\
         waybar \
         wl-clip-persist \
         hyprshot \
@@ -171,7 +193,7 @@ editor   yes      # Allow editing kernel parameters at boot
 EOL_LOADER
 
     # Get UUID of the root partition for boot entries
-    ROOT_UUID=$(blkid -s UUID -o value $(findmnt -no SOURCE /) | head -n 1)
+    ROOT_UUID=$(blkid -s UUID -o value "$(findmnt -no SOURCE /)" | head -n 1)
     if [ -z "$ROOT_UUID" ]; then
         echo "Could not find root partition UUID. Cannot create boot entries. Exiting chroot."
         exit 1
@@ -341,3 +363,13 @@ echo "   - Useful tool: `GTK_DEBUG=interactive regreet` (run from a TTY) to insp
 echo ""
 echo "6. Consider installing an AUR helper (like yay or paru) if you need more packages, e.g., 'all-repository-fonts' if you want even more fonts than those installed from official repos."
 echo "   Example for yay: git clone https://aur.archlinux.org/yay.git; cd yay; makepkg -si; cd ..; rm -rf yay"
+echo "should we unmount drives and reboot?"
+read response
+respnse = ${respnse,,}
+if [[ "$response" == "y" ]] ;
+then
+umount /mnt/boot
+umount /mnt
+echo "unmounted, now rebooting"
+reboot
+fi
