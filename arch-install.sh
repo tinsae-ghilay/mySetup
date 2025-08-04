@@ -19,14 +19,14 @@
 # 5. Connect to the internet (e.g., wifi-menu or iwctl).
 # 6. (Optional but recommended) Update mirrorlist on LIVE ENVIRONMENT:
 #    pacman -S reflector
-#    reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 # ---------------------------------------------------------------------------------
 
 # Ensure the script is run as root
-if [ "$(id -u)" -ne 0 ]; then
-   echo "This script must be run as root. Please use sudo."
-   exit 1
-fi
+# if [ "$(id -u)" -ne 0 ]; then
+#    echo "This script must be run as root. Please use sudo."
+#    exit 1
+# fi
 
 echo "--- Starting Arch Linux Hyprland Installation Script with systemd-boot and greetd ---"
 
@@ -37,7 +37,7 @@ echo "Installing base system and essential packages..."
 # We are using xf86-video-nouveau for NVIDIA for potential suspend benefits.
 PACSTRAP_PKGS=(
     base linux linux-firmware intel-ucode \
-    mesa xf86-video-nouveau vulkan-intel intel-media-driver \
+    mesa nvidia nvidia-utils lib32-nvidia-utils vulkan-intel intel-media-driver \
     networkmanager nm-connection-editor network-manager-applet \
     sudo dosfstools \
     man-db man-pages texinfo \
@@ -60,12 +60,10 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
 
     # --- 3.1. System Locale, Time, and Keyboard Layout ---
     echo "Setting system locale, timezone, and keyboard layout..."
-    # Set locale to en_US.UTF-8
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-    # Also include de_AT.UTF-8 for Austrian German locale support, if desired for other contexts
-    echo "de_AT.UTF-8 UTF-8" >> /etc/locale.gen
+    # Set locale to en_GB.UTF-8
+    echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
     locale-gen
-    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+    echo "LANG=en_GB.UTF-8" > /etc/locale.conf
     echo "KEYMAP=de-latin1" > /etc/vconsole.conf # Console keyboard layout
 
     # Set timezone to Europe/Vienna (CET)
@@ -119,16 +117,13 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
         wl-clip-persist \
         hyprshot \
         brightnessctl \
-        eog \
-        hyprsunset hyprsysteminfo \
+        loupe \
         # Printer support
         cups cups-filters gutenprint \
         # Bluetooth support
         bluez bluez-utils blueman \
         # Bluetooth for CUPS (optional, for Bluetooth printers)
         bluez-cups \
-        # Mobile Broadband
-        modemmanager mobile-broadband-provider-info \
         # Font packages (your specified list)
         ttf-bitstream-vera ttf-croscore ttf-dejavu noto-fonts noto-fonts-cjk \
         noto-fonts-emoji noto-fonts-extra ttf-liberation ttf-roboto ttf-opensans \
@@ -140,11 +135,11 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
         # NTFS support
         ntfs-3g \
         # Android/MTP support
-        android-udev gvfs \
+        android-udev gvfs scrcpy\
         # XWayland Support (essential for running X11 apps on Wayland)
         xorg-xwayland \
         # Display Manager (greetd with Regreet)
-        greetd greetd-regreet
+        greetd greetd-regreet 
     )
 
     pacman -S --needed "${FULL_INSTALL_PKGS[@]}" || { echo "Package installation failed. Exiting chroot."; exit 1; }
@@ -190,7 +185,7 @@ title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
 initrd  /initramfs-linux.img
-options root=UUID=$ROOT_UUID rw vga=current loglevel=3 quiet splash
+options root=UUID=$ROOT_UUID rw vga=current loglevel=3 rd.udev.log_level=3 nvidia_drm.modset=1 fsck.mode=skip quiet splash
 EOL_ARCH
 
     # Create fallback-arch.conf (fallback boot entry)
@@ -199,7 +194,7 @@ title   Arch Linux (Fallback)
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
 initrd  /initramfs-linux-fallback.img
-options root=UUID=$ROOT_UUID rw vga=current loglevel=3 quiet splash
+options root=UUID=$ROOT_UUID rw vga=current loglevel=3 rd.udev.log_level=3 nvidia_drm.modset=1 fsck.mode=skip quiet splash
 EOL_FALLBACK
 
     echo "systemd-boot configured with arch.conf and fallback-arch.conf."

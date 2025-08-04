@@ -1,3 +1,15 @@
+
+/*--------------------------*/
+/*         colours          */
+/*--------------------------*/
+@define-color bg #004546;
+@define-color bg_h #047F66;
+@define-color text_h #FFFFFF;
+@define-color text #89B4FA;
+@define-color transparent rgba(0,0,0,0.0);
+@define-color border #0781B5;
+
+
 * {
     border: none;
     border-radius: 0;
@@ -8,36 +20,36 @@
 }
 
 window#waybar {
-    background: rgba(21, 18, 25, 0.0);
-    color: #cdd6f4;
+    background: @transparent;
+    /*color: #cdd6f4;*/
 }
 
 tooltip {
-    background: black;
+    background: @bg;
     border-radius: 10px;
     border-width: 1px;
     border-style: solid;
-    border-color: dodgerblue;
+    border-color: @border;
     opacity: 0.9;
 }
 
 #workspaces button {
     padding: 0 7px;
-    margin-right: 2px;
-    margin-left: 2px;
-    color: rgba(255, 255, 255, 0.6);
+   /* margin-right: 2px;
+    margin-left: 2px;*/
+    color: @text;
     border-radius: 8px;
 }
 
 #workspaces button.active {
-    color: #ffffff;
-    background-color: rgba(0, 0, 0, 0.5);
+    color: @text_h;
+    background-color: @border;
     /*border-bottom: 1px solid #047fff;*/
 }
 
 #workspaces button.focused {
-    color: white;
-    background: #eba0ac;
+    color: @text_h;
+    background: @bg_h;
 }
 
 #workspaces button.urgent {
@@ -48,12 +60,10 @@ tooltip {
 
 
 #workspaces button:hover {
-    background: #11111b;
+    background: @bg_h;
 }
 #custom-recording,
 #custom-power_profile,
-#custom-moon,
-#custom-wallpaper,
 #window,
 #clock,
 #battery,
@@ -65,13 +75,12 @@ tooltip {
 #custom-memory,
 #workspaces,
 #custom-weather,
-#custom-swaync,
 #custom-screen,
 #backlight {
-    color: #89b4fa;
-    background: #004549;
+    color: @text;
+    background:@bg; /*#004549;*/
     padding: 0px 10px;
-    border: 1px solid #047fff;
+   border: 1px solid @border;
 }
 
 #custom-power_profile:hover,
@@ -92,7 +101,7 @@ tooltip {
 #custom-recording:hover,
 #custom-screen:hover,
 #backlight:hover {
-    color: white;
+    color: @text_h;
     background: #047f66;
 }
 
@@ -103,7 +112,7 @@ tooltip {
 }
 
 #custom-memory {
-    color: #eba0ac;
+    color: @text;
 }
 
 #custom-temperature {
@@ -116,31 +125,31 @@ tooltip {
 
 #custom-power,
 #custom-menu {
-    color: #89b4fa;
-    background-color: #004540;
+    color: @text;
+    background-color: @bg;
     padding: 0px 5px;
-    border: 1px solid #047fff;
+    border: 1px solid @border;
 }
 
 #custom-recording,
 #custom-swaync,
 #custom-Screen{
-	color:white;
- 	border-top: 1px solid #047fff;
+	color:@text;
+ 	/*border-top: 1px solid #047fff;
  	border-bottom: 1px solid #047fff;
  	border-left:none;
- 	border-right:none;
+ 	border-right:none;*/
  	padding:0 10px;
-	font-size:24;
+	font-size:24px;
 }
 
 #custom-swaync {
     border-radius: 0 10px 10px 0;
-    border-right: 1px solid #047fff;
+    /*border-right: 1px solid #047fff;*/
 }
 
 #custom-spotify {
-	margin-left:10;
+	margin-left:10px;
 	
 }
 
@@ -149,7 +158,7 @@ tooltip {
     border-radius: 10px 0 0 10px;
 }
 #custom-menu {
-    font-size: 22;
+    font-size: 22px;
     border-left: 0px;
     border-radius: 0 10px 10px 0;
 }
@@ -164,15 +173,15 @@ tooltip {
 
 
 #workspaces {
-    background: #004540;
+    background: @bg;
     border-radius: 10px;
     margin-left: 10px;
-    padding-right: 5px;
-    padding-left: 5px;
+    /*padding-right: 5px;
+    padding-left: 5px;*/
 }
 
 #custom-power_profile {
-    color: #a6e3a1;
+    color: @text;
     border-left: 0px;
     border-right: 0px;
 }
@@ -184,15 +193,15 @@ tooltip {
 }
 #tray,
 #clock {
-    color: #89b4fa;
+    color: @text;
     border-radius: 10px;
     margin-left: 5px;
 }
 
 #pulseaudio {
-    color: #89b4fa;
+    color: @text;
     border-left: none;
-    border-right: 1px solid #047fff;
+    /*border-right: 1px solid #047fff;*/
 }
 
 #pulseaudio.microphone {
@@ -209,7 +218,7 @@ tooltip {
 
 
 #battery {
-    color: #a6e3a1;
+    color: @text;
     border-radius: 0 10px 10px 0;
     margin-right: 5px;
 }
@@ -226,7 +235,7 @@ tooltip {
 }
 
 #custom-spotify{
-	color:#047fff;
+	color:@text;
 }
 
 
@@ -234,7 +243,7 @@ menu {
 	border-radius: 10px;
 	padding:3px;
 	border: 1px solid #047fff;
-	background: #004540;
+	background: @bg;
 }
 menuitem {
 	border-radius: 5px;
