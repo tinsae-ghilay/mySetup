@@ -161,7 +161,7 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
         # XWayland Support (essential for running X11 apps on Wayland)
         xorg-xwayland \
         # Display Manager (greetd with Regreet)
-        greetd greetd-regreet 
+        greetd tuigreet 
     )
 
     pacman -S --needed "${FULL_INSTALL_PKGS[@]}" || { echo "Package installation failed. Exiting chroot."; exit 1; }
@@ -172,10 +172,10 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     systemctl enable NetworkManager.service
     systemctl enable bluetooth.service
     systemctl enable cups.service
-    systemctl enable greetd.service # Enable greetd instead of sddm
+    systemctl enable greetd.service
 
     # Enable PipeWire user services (these will start automatically on first graphical login)
-    systemctl --user enable pipewire pipewire-pulse wireplumber
+    systemctl enable pipewire pipewire-pulse wireplumber
 
     echo "Services enabled."
 
@@ -221,8 +221,8 @@ EOL_FALLBACK
 
     echo "systemd-boot configured with arch.conf and fallback-arch.conf."
 
-    # --- 3.9. Configure greetd and Regreet ---
-    echo "Configuring greetd and Regreet..."
+    # --- 3.9. Configure greetd and TuiGreet ---
+    echo "Configuring greetd and TuiGreet..."
 
     # Create greetd config directory if it doesn't exist
     mkdir -p /etc/greetd
@@ -233,105 +233,9 @@ EOL_FALLBACK
 vt = 7 # Common for graphical greeters, ensures a clean VT
 
 [default_session]
-user = "greeter" # The user account greetd will run the greeter as
-# Command to launch the greeter. We use a minimal Hyprland instance as the compositor for Regreet.
-command = "Hyprland --config /etc/greetd/hyprland-greeter.conf"
+command = "tuigreet --time --asterisks --cmd Hyprland"
+user = "greeter"
 EOL_GREETD_CONFIG
-
-    # Create /etc/greetd/hyprland-greeter.conf (minimal Hyprland config for the greeter)
-    # This config is used only when the greeter is active.
-    cat <<EOL_HYPRLAND_GREETER_CONF > /etc/greetd/hyprland-greeter.conf
-# This is a minimal Hyprland config specifically for the greetd greeter.
-# It only runs the greeter and nothing else.
-monitor=,preferred,auto,1
-input {
-    kb_layout = de-latin1 # Ensure this matches your /etc/vconsole.conf or preferred layout
-    follow_mouse = 1
-    touchpad {
-        disable_while_typing = true
-    }
-}
-# Execute the Regreet greeter. The '--cmd "Hyprland"' tells Regreet what to launch on successful login.
-exec = regreet --cmd "Hyprland"
-# Optional: Bindings for emergency exit from the greeter session
-bind = SUPER_SHIFT_Q, exec, hyprctl kill
-bind = SUPER_SHIFT_E, exit,
-EOL_HYPRLAND_GREETER_CONF
-
-    # Configure Regreet (regreet.toml) - Basic example, highly customizable via CSS later
-    cat <<EOL_REGREET_CONFIG > /etc/greetd/regreet.toml
-[greeter]
-# The 'command' in greetd/config.toml already specifies the session.
-# This 'command' within Regreet's config is if Regreet itself were selecting it.
-# Usually, not needed when greetd is handling session launching directly as above.
-# We'll leave it out to avoid confusion.
-
-[style]
-# Path to your custom CSS file for Regreet.
-# You will customize this file significantly after the first boot.
-css = "/etc/greetd/regreet.css"
-
-[GTK]
-# These settings help Regreet (a GTK app) integrate with your system's themes.
-# Ensure these match your desired GTK theme, icon theme, and cursor theme for consistency.
-application_prefer_dark_theme = true
-cursor_theme_name = "Bibata-Modern-Ice" # Example, update with your actual cursor theme name
-font_name = "Noto Sans 10" # Example, update with your actual font name and size
-icon_theme_name = "Papirus" # Example, update with your actual icon theme name
-theme_name = "Adwaita-dark" # Example, update with your actual GTK theme name
-
-[widget.background]
-# Set a background image for Regreet. For consistency, use your Hyprland wallpaper.
-# Replace this path with the actual path to your desired wallpaper image.
-# For simplicity during install, you might put a generic wallpaper here.
-# NOTE: The 'greeter' user needs read permissions for this file!
-path = "/usr/share/backgrounds/wallpaper.jpg" # <--- IMPORTANT: Update this path!
-fit = "Cover" # Options: "Cover", "Contain", "ScaleDown", etc.
-EOL_REGREET_CONFIG
-
-    # Create a placeholder CSS file for Regreet.                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-    # THIS WILL NEED HEAVY CUSTOMIZATION AFTER INSTALLATION TO MATCH HYPRLOCK!
-    cat <<EOL_REGREET_CSS > /etc/greetd/regreet.css
-/* Basic Regreet CSS - Customize this heavily to match your Hyprlock theme */
-/* This is just a starting point. Use GTK Inspector (GDK_DEBUG=interactive regreet)
-   to find widget names and tailor your styling. */
-
-#greeter {
-    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay on background image */
-}
-
-/* Example: Customize user/password labels */
-label {
-    color: #ffffff; /* White text */                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 1.2em;
-}
-
-/* Example: Customize input fields */
-entry {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
-    padding: 8px;
-    color: #ffffff;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 1.1em;
-}
-
-/* Hide some default Regreet elements if you want a cleaner look */
-/* Example (may need adjustment based on Regreet version/structure): */
-/* #version_label { display: none; } */
-/* #session_chooser { background-color: transparent; border: none; } */
-
-EOL_REGREET_CSS
-
-    # Ensure the 'greeter' user exists and has a shell (created by greetd package, but verify)
-    # Ensure the 'greeter' user can read the wallpaper and config files
-    chown -R greeter:greeter /etc/greetd
-    chmod -R 644 /etc/greetd/* # Ensure read permissions
-    chmod 755 /etc/greetd # Ensure directory is executable
-
-    echo "greetd and Regreet configured."
 
 EOF_CHROOT
 
