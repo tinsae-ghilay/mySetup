@@ -26,7 +26,7 @@ read response
 if [ "$response" != "y" ]; then
     echo "ok, exiting."
     exit 0
-if 
+fi
 # Check if reflector is installed
 if ! command -v reflector >/dev/null 2>&1; then
     echo "reflector is not installed. Installing..."
@@ -52,6 +52,45 @@ reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/
 #    exit 1
 # fi
 
+# now host, root and user data
+echo "please provide host name"
+read HOSTNAME_INPUT
+
+# user name
+echo "please provide user name"
+read USERNAME_INPUT
+
+echo "shoul there be root password? y for yes"
+read response
+
+# root password
+if [ "$response" = "y" ]; then
+	while true; do
+		read -sp "Enter desired root password: " ROOT_PASS
+  	echo
+  	read -sp "Confirm root password: " ROOT_PASS_CONFIRM
+  	echo
+  	if [[ "$ROOT_PASS" == "$ROOT_PASS_CONFIRM" ]]; then
+  	  break
+  	else
+  	  echo "Passwords do not match. Please try again."
+  	fi
+	done
+fi
+
+# user password
+while true; do
+  read -sp "Enter password for user '$USERNAME_INPUT': " USER_PASS
+  echo
+  read -sp "Confirm user password: " USER_PASS_CONFIRM
+  echo
+  if [[ "$USER_PASS" == "$USER_PASS_CONFIRM" ]]; then
+    break
+  else
+    echo "Passwords do not match. Please try again."
+  fi
+done
+
 echo "--- Starting Arch Linux Hyprland Installation Script with systemd-boot and greetd ---"
 
 # --- 1. Pacstrap the base system and core packages ---
@@ -75,7 +114,7 @@ echo "Base system and essential packages installed."
 # --- 2. Generate fstab ---
 echo "Generating fstab..."
 genfstab -U /mnt >> /mnt/etc/fstab || { echo "fstab generation failed. Exiting."; exit 1; }
-echo "fstab generated."exit 
+echo "fstab generated."
 
 # --- 3. Chroot into the new system and continue configuration ---
 echo "Entering chroot environment..."
@@ -88,7 +127,7 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
     locale-gen
     echo "LANG=en_GB.UTF-8" > /etc/locale.conf
-    echo "KEYMAP=de-latin1" > /etc/vconsole.conf # Console keyboard layout
+    echo "KEYMAP=de" > /etc/vconsole.conf # Console keyboard layout
 
     # Set timezone to Europe/Vienna (CET)
     ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime
@@ -97,23 +136,26 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     echo "System locale, timezone, and keyboard layout set."
 
     # --- 3.2. Hostname ---
-    read -p "Enter desired hostname: " HOSTNAME_INPUT
     echo "$HOSTNAME_INPUT" > /etc/hostname
     echo "127.0.0.1    localhost" >> /etc/hosts
     echo "::1          localhost" >> /etc/hosts
     echo "127.0.1.1    $HOSTNAME_INPUT.localdomain $HOSTNAME_INPUT" >> /etc/hosts
     echo "Hostname set to $HOSTNAME_INPUT."
 
-    # --- 3.3. Root Password ---
-    echo "Setting root password..."
-    passwd || { echo "Root password setup failed. Exiting chroot."; exit 1; }
-
-    # --- 3.4. User Creation and Sudoers ---
-    read -p "Enter desired username: " USERNAME_INPUT
-    # Add user to wheel (sudo), lp (printers), and power (suspend/shutdown) groups
+    # --- 3.3. User Creation and Sudoers 
+			# Check if a root password was provided
+			echo "Setting root password" 
+    if [[ -n "$ROOT_PASS" ]]; then
+        echo "root:$ROOT_PASS" | chpasswd || { echo "Root password setup failed. Exiting chroot."; exit 1; }
+        echo "Root password set."
+    else
+        echo "Root password was not provided. Skipping."
+    fi
+    # --- 3.4 user password
+    # Create user and set password using chpasswd
     useradd -m -G wheel,lp,power "$USERNAME_INPUT" || { echo "User creation failed. Exiting chroot."; exit 1; }
-    echo "Setting password for user $USERNAME_INPUT..."
-    passwd "$USERNAME_INPUT" || { echo "User password setup failed. Exiting chroot."; exit 1; }
+    echo "$USERNAME_INPUT:$USER_PASS" | chpasswd || { echo "User password setup failed. Exiting chroot."; exit 1; }
+    echo "User $USERNAME_INPUT created and password set."
 
     # Uncomment wheel group in sudoers file to allow sudo access
     sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //g' /etc/sudoers || { echo "Sudoers modification failed. Exiting chroot."; exit 1; }
@@ -271,11 +313,9 @@ echo "6. Consider installing an AUR helper (like yay or paru) if you need more p
 echo "   Example for yay: git clone https://aur.archlinux.org/yay.git; cd yay; makepkg -si; cd ..; rm -rf yay"
 echo "should we unmount drives and reboot?"
 read response
-respnse = ${respnse,,}
-if [[ "$response" == "y" ]] ;
-then
-umount /mnt/boot
-umount /mnt
-echo "unmounted, now rebooting"
-reboot
+
+if [ "$response" == "y" ]; then
+	umount -R /mnt
+	echo "unmounted, now rebooting"
+	reboot
 fi
