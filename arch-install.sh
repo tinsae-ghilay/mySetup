@@ -20,11 +20,10 @@
 echo "the following steps need to be done first"
 echo "1. Drive partitioned and mounted"
 echo "2. Multilib enabled for lib32 Nvidia utils, and ofcourse, connected to internet"
-echo "Start installation script? Y not case sensitive for yes, anything else for no"
+echo "Start installation script? y (lower case) case sensitive for yes, anything else for no"
 read response
-# convert to lower case
-response = ${response,,}
-if [[ "$response" != "y"]] ; then
+# if response is yes
+if [ "$response" != "y" ]; then
     echo "ok, exiting."
     exit 0
 if 
@@ -76,7 +75,7 @@ echo "Base system and essential packages installed."
 # --- 2. Generate fstab ---
 echo "Generating fstab..."
 genfstab -U /mnt >> /mnt/etc/fstab || { echo "fstab generation failed. Exiting."; exit 1; }
-echo "fstab generated."
+echo "fstab generated."exit 
 
 # --- 3. Chroot into the new system and continue configuration ---
 echo "Entering chroot environment..."
