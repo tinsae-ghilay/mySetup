@@ -17,6 +17,9 @@
 #    # If you have a separate /home:
 #    # mkdir /mnt/home; mount /dev/sda3 /mnt/home
 # 5. Connect to the internet (e.g., wifi-menu or iwctl).
+echo "the following steps need to be done first"
+echo "1. Drive partitioned and mounted"
+echo "2. Multilib enabled for lib32 Nvidia utils, and ofcourse, connected to internet"
 echo "Start installation script? Y not case sensitive for yes, anything else for no"
 read response
 # convert to lower case
