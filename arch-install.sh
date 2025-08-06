@@ -291,9 +291,6 @@ echo ""
 echo "--- Post-Reboot Steps (Run these as your NEW USER after first login) ---"
 echo "1. Log in with your new user in the TTY (or the graphical greetd if it launches)."
 echo "   - If greetd launches but you can't log in, switch to TTY2-7 (Ctrl+Alt+F2-F7) and login there."
-echo "2. Clone your dotfiles repository to setup your Hyprland configuration:"
-echo "   mkdir -p ~/.config"
-echo "   git clone https://github.com/yourusername/your-dotfiles.git ~/dotfiles" # Replace with your actual repo URL
 
 echo "should we unmount drives and reboot?"
 read response
