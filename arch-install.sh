@@ -44,13 +44,8 @@ else
 fi
 
 reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+pacman -Syy
 # ---------------------------------------------------------------------------------
-
-# Ensure the script is run as root
-# if [ "$(id -u)" -ne 0 ]; then
-#    echo "This script must be run as root. Please use sudo."
-#    exit 1
-# fi
 
 # now host, root and user data
 echo "please provide host name"
@@ -66,29 +61,29 @@ read response
 # root password
 if [ "$response" = "y" ]; then
 	while true; do
-		read -sp "Enter desired root password: " ROOT_PASS
-  	echo
-  	read -sp "Confirm root password: " ROOT_PASS_CONFIRM
-  	echo
-  	if [[ "$ROOT_PASS" == "$ROOT_PASS_CONFIRM" ]]; then
-  	  break
-  	else
-  	  echo "Passwords do not match. Please try again."
-  	fi
+		echo "Enter desired root password: " 
+		read -s ROOT_PASS
+		echo "Confirm root password: " 
+		read -s ROOT_PASS_CONFIRM
+		if [[ "$ROOT_PASS" == "$ROOT_PASS_CONFIRM" ]]; then
+  	  		break
+  		else
+  	  		echo "Passwords do not match. Please try again."
+  		fi
 	done
 fi
 
 # user password
 while true; do
-  read -sp "Enter password for user '$USERNAME_INPUT': " USER_PASS
-  echo
-  read -sp "Confirm user password: " USER_PASS_CONFIRM
-  echo
-  if [[ "$USER_PASS" == "$USER_PASS_CONFIRM" ]]; then
-    break
-  else
-    echo "Passwords do not match. Please try again."
-  fi
+	echo "Enter password for user '$USERNAME_INPUT': " 
+	read -s USER_PASS
+	echo "Confirm user password: " 
+	read -s USER_PASS_CONFIRM
+  	if [[ "$USER_PASS" == "$USER_PASS_CONFIRM" ]]; then
+    		break
+  	else
+    		echo "Passwords do not match. Please try again."
+  	fi
 done
 
 echo "--- Starting Arch Linux Hyprland Installation Script with systemd-boot and greetd ---"
@@ -97,19 +92,22 @@ echo "--- Starting Arch Linux Hyprland Installation Script with systemd-boot and
 echo "Installing base system and essential packages..."
 
 # Core packages for a functioning Arch system with initial drivers and networking.
-# We are using xf86-video-nouveau for NVIDIA for potential suspend benefits.
+
 PACSTRAP_PKGS=(
-    base linux linux-firmware intel-ucode sof-firmware\
+    base linux linux-firmware intel-ucode sof-firmware \
     mesa nvidia nvidia-utils lib32-nvidia-utils vulkan-intel intel-media-driver \
     networkmanager nm-connection-editor network-manager-applet \
     sudo dosfstools \
     man-db man-pages texinfo \
-    neovim nano git gcc gdb efibootmgr # efibootmgr is needed by bootctl
+    neovim nano git gcc gdb efibootmgr
 )
 
 pacstrap /mnt "${PACSTRAP_PKGS[@]}" || { echo "Pacstrap failed. Exiting."; exit 1; }
 
-echo "Base system and essential packages installed."
+echo "Base system and essential packages installed. copying mirrors to new system"
+
+cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
+echo "mirror lists copied to new system"
 
 # --- 2. Generate fstab ---
 echo "Generating fstab..."
@@ -120,6 +118,9 @@ echo "fstab generated."
 echo "Entering chroot environment..."
 arch-chroot /mnt /bin/bash <<EOF_CHROOT
     echo "Inside chroot. Continuing configuration..."
+    
+    # enable parallel downloads
+    sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
     # --- 3.1. System Locale, Time, and Keyboard Layout ---
     echo "Setting system locale, timezone, and keyboard layout..."
@@ -166,50 +167,46 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     # Uncomment the [multilib] section in pacman.conf
     sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf || { echo "Multilib enablement failed. Exiting chroot."; exit 1; }
     pacman -Sy # Sync package databases after enabling multilib
-    echo "Multilib enabled."
+    echo "Multilib enabled. and synced"
 
     # --- 3.6. Install Hyprland and all other packages ---
     echo "Installing Hyprland and all specified packages..."
-    FULL_INSTALL_PKGS=(
-        hyprland hypridle hyprlock hyprpaper \
-        xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
-        qt5-wayland qt6-wayland \
-        pipewire wireplumber pipewire-pulse pipewire-alsa pipewire-jack \
-        dunst \
-        kitty \
-        hyprpolkitagent \
-        wofi wlogout\
-        waybar \
-        wl-clip-persist \
-        hyprshot \
-        brightnessctl \
-        loupe \
-        # Printer support
-        cups cups-filters gutenprint \
-        # Bluetooth support
-        bluez bluez-utils blueman \
-        # Bluetooth for CUPS (optional, for Bluetooth printers)
-        bluez-cups \
-        # Font packages (your specified list)
-        ttf-bitstream-vera ttf-croscore ttf-dejavu noto-fonts noto-fonts-cjk \
-        noto-fonts-emoji noto-fonts-extra ttf-liberation ttf-roboto ttf-opensans \
-        cantarell-fonts gnu-free-fonts ttf-gentium-plus ttf-linux-libertine \
-        tex-gyre-fonts adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts \
-        ttf-anonymous-pro ttf-fira-code ttf-hack ttf-jetbrains-mono \
-        adobe-source-code-pro-fonts xorg-fonts-100dpi xorg-fonts-75dpi \
-        xorg-fonts-misc xorg-fonts-cyrillic xorg-fonts-type1 \
-        # NTFS support
-        ntfs-3g \
-        # Android/MTP support
-        android-udev gvfs scrcpy\
-        # XWayland Support (essential for running X11 apps on Wayland)
-        xorg-xwayland \
-        # Display Manager (greetd with Regreet)
-        greetd tuigreet 
-    )
+    
+    # hyprecosystem
+    pacman -S --needed --noconfirm hyprland hypridle hyprlock hyprpaper hyprshot hyprpolkitagent || { echo "Hyperecho apps installation failed. Exiting chroot."; exit 1; }
+    
+    # xdg desktop portal
+    pacman -S --needed --noconfirm xdg-desktop-portal-hyprland xdg-desktop-portal-gtk || { echo "XDG istall failed."; exit 1; }
+    
+    # qt wayland support
+    pacman -S --needed --noconfirm qt5-wayland qt6-wayland || { echo "QT packages install failed. Exiting chroot."; exit 1; }
+    
+    # audio
+    pacman -S --needed --noconfirm pipewire wireplumber pipewire-pulse pipewire-alsa pipewire-jack || { echo "Installing audio tools failed. Exiting chroot."; exit 1; }
+    
+    # msic needed
+    pacman -S --needed --noconfirm swaync kitty wofi firefox code spotify-launcher waybar wl-clip-persist || { echo "Error installing sway kitty and co. Exiting chroot."; exit 1; }
+    
+    # print bluetooth and brightness services
+    pacman -S --needed --noconfirm brightnessctl cups cups-filters gutenprint bluez bluez-utils blueman bluez-cups || { echo "Error installing print, bluetooth and brightness control failsed. Exiting chroot."; exit 1; }
+    
+    # gnome apps
+    pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look || { echo "Installing gnome+ apps failed. Exiting chroot."; exit 1; }
+    
+    # android and ntfs support
+    pacman -S --needed --noconfirm ntfs-3g android-udev gvfs scrcpy || { echo "error installing android tools. Exiting chroot."; exit 1; }
+    
+    # fonts
+    pacman -S --needed --noconfirm ttf-bitstream-vera ttf-croscore ttf-dejavu noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ttf-liberation ttf-roboto ttf-opensans cantarell-fonts gnu-free-fonts ttf-gentium-plus ttf-linux-libertine tex-gyre-fonts adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts ttf-anonymous-pro ttf-fira-code ttf-hack ttf-jetbrains-mono adobe-source-code-pro-fonts xorg-fonts-100dpi xorg-fonts-75dpi xorg-fonts-misc xorg-fonts-cyrillic xorg-fonts-type1 || { echo "Error installing fonts. Exiting chroot."; exit 1; }
+    
+    # X11 support
+    pacman -S --needed --noconfirm xorg-xwayland || { echo "error installing xwayland support. Exiting chroot."; exit 1; }
+    
+    # Display Manager (greetd with Regreet)
+    pacman -S --needed --noconfirm greetd greetd-tuigreet || { echo "Error installing greetd. Exiting chroot."; exit 1; }
 
-    pacman -S --needed "${FULL_INSTALL_PKGS[@]}" || { echo "Package installation failed. Exiting chroot."; exit 1; }
-    echo "Hyprland and other packages installed."
+
+    echo "all packages installed."
 
     # --- 3.7. Enable Services ---
     echo "Enabling essential services..."
@@ -219,7 +216,7 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     systemctl enable greetd.service
 
     # Enable PipeWire user services (these will start automatically on first graphical login)
-    systemctl enable pipewire pipewire-pulse wireplumber
+    # systemctl enable pipewire pipewire-pulse wireplumber
 
     echo "Services enabled."
 
