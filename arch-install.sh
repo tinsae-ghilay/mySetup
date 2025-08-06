@@ -191,7 +191,7 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     pacman -S --needed --noconfirm brightnessctl cups cups-filters gutenprint bluez bluez-utils blueman bluez-cups || { echo "Error installing print, bluetooth and brightness control failsed. Exiting chroot."; exit 1; }
     
     # gnome apps
-    pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look || { echo "Installing gnome+ apps failed. Exiting chroot."; exit 1; }
+    pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look gnome-keyring || { echo "Installing gnome+ apps failed. Exiting chroot."; exit 1; }
     
     # android and ntfs support
     pacman -S --needed --noconfirm ntfs-3g android-udev gvfs scrcpy || { echo "error installing android tools. Exiting chroot."; exit 1; }
@@ -312,7 +312,9 @@ echo "should we unmount drives and reboot?"
 read response
 
 if [ "$response" == "y" ]; then
+    exit
 	umount -R /mnt
 	echo "unmounted, now rebooting"
 	reboot
 fi
+
