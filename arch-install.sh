@@ -278,6 +278,9 @@ command = "tuigreet --time --asterisks --cmd Hyprland"
 user = "greeter"
 EOL_GREETD_CONFIG
 
+# copying dot files
+echo "copying config files"
+git clone https://github.com/tinsae-ghilay/mySetup.git /home/$USERNAME_INPUT/.config && echo "---- DONE CLONING DOT FILES! ----" || { echo "looks like config will have to be cloned manualy !"; }
 EOF_CHROOT
 
 # --- 4. Final Steps (Outside Chroot) ---
@@ -291,23 +294,7 @@ echo "   - If greetd launches but you can't log in, switch to TTY2-7 (Ctrl+Alt+F
 echo "2. Clone your dotfiles repository to setup your Hyprland configuration:"
 echo "   mkdir -p ~/.config"
 echo "   git clone https://github.com/yourusername/your-dotfiles.git ~/dotfiles" # Replace with your actual repo URL
-echo ""
-echo "3. Copy or symlink your configurations from ~/dotfiles/ to their correct locations."
-echo "   - For Hyprland config: cp -r ~/dotfiles/.config/hypr ~/.config/"
-echo "   - For Waybar config: cp -r ~/dotfiles/.config/waybar ~/.config/"
-echo "   - For general dotfile management, consider GNU Stow (sudo pacman -S stow) from ~/dotfiles."
-echo ""
-echo "4. After applying your dotfiles, start Hyprland from a TTY (if not auto-launched by greetd on login):"
-echo "   Hyprland"
-echo "   - Ensure 'exec-once = blueman-applet' and other desired autostart commands are in your ~/.config/hypr/hyprland.conf."
-echo ""
-echo "5. **CRITICAL: Customize Regreet's appearance!** The default `regreet.css` is basic."
-echo "   - You will need to edit `/etc/greetd/regreet.css` to match your Hyprlock aesthetic."
-echo "   - You may also need to install a background image to `/usr/share/backgrounds/` and update `regreet.toml`."
-echo "   - Useful tool: `GTK_DEBUG=interactive regreet` (run from a TTY) to inspect Regreet's widgets."
-echo ""
-echo "6. Consider installing an AUR helper (like yay or paru) if you need more packages, e.g., 'all-repository-fonts' if you want even more fonts than those installed from official repos."
-echo "   Example for yay: git clone https://aur.archlinux.org/yay.git; cd yay; makepkg -si; cd ..; rm -rf yay"
+
 echo "should we unmount drives and reboot?"
 read response
 
