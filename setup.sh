@@ -5,39 +5,13 @@ echo "Inside chroot. Continuing configuration..."
 echo "please provide host name"
 read HOSTNAME_INPUT
 
-# user name
-echo "please provide user name"
-read USERNAME_INPUT
-
 # root password
 echo "should there be root password? y for yes (recomended no, thus disabling root login"
 read response
 if [ "$response" = "y" ]; then
-	while true; do
-		echo "Enter desired root password: " 
-		read -s ROOT_PASS
-		echo "Confirm root password: " 
-		read -s ROOT_PASS_CONFIRM
-		if [[ "$ROOT_PASS" == "$ROOT_PASS_CONFIRM" ]]; then
-  	  		break
-  		else
-  	  		echo "Passwords do not match. Please try again."
-  		fi
-	done
+	passwd
 fi
 
-# user password
-while true; do
-	echo "Enter password for user '$USERNAME_INPUT': " 
-	read -s USER_PASS
-	echo "Confirm user password: " 
-	read -s USER_PASS_CONFIRM
-  	if [[ "$USER_PASS" == "$USER_PASS_CONFIRM" ]]; then
-    		break
-  	else
-    		echo "Passwords do not match. Please try again."
-  	fi
-done
     
 # enable parallel downloads
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
@@ -48,10 +22,16 @@ echo "Setting system locale, timezone, and keyboard layout..."
 echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
 echo "LANG=en_GB.UTF-8" > /etc/locale.conf
-echo "KEYMAP=de" > /etc/vconsole.conf # Console keyboard layout
+
+# may also need to be interactive, since I may have diferent layout on some laptops
+echo "Enter keyboard map example de"
+read KEYMAP
+echo "KEYMAP=$KEYMAP" > /etc/vconsole.conf # Console keyboard layout
 
 # Set timezone to Europe/Vienna (CET)
-ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime
+echo "enter time zone, eg. Europe/Vienna"
+read REGION
+ln -sf /usr/share/zoneinfo/"$REGION" /etc/localtime
 hwclock --systohc # Set hardware clock to system time
 
 echo "System locale, timezone, and keyboard layout set."
@@ -73,9 +53,11 @@ else
     echo "Root password was not provided. Skipping."
 fi
 
-# Create user and set password using chpasswd
+# Create user and set password
+echo "please provide user name"
+read USERNAME_INPUT
 useradd -m -G wheel,lp,power "$USERNAME_INPUT" || { echo "User creation failed. Exiting chroot."; exit 1; }
-echo "$USERNAME_INPUT:$USER_PASS" | chpasswd || { echo "User password setup failed. Exiting chroot."; exit 1; }
+passwd "$USERNAME_INPUT
 echo "User $USERNAME_INPUT created and password set."
 
 # allow sudo access to user
@@ -154,11 +136,25 @@ editor true
 EOL_LOADER
 
 # Get UUID of the root partition for boot entries
-# ROOT_UUID=$(blkid -s UUID -o value "$(findmnt -no SOURCE /)" | head -n 1)
-# if [ -z "$ROOT_UUID" ]; then
-#     echo "Could not find root partition UUID. Cannot create boot entries. Exiting chroot."
-#     exit 1
-# fi
+ROOT_UUID=$(blkid -s UUID -o value "$1" | head -n 1)
+# make sure we have it
+if [ -z "$ROOT_UUID" ]; then
+        echo "Could not find root partition UUID. would you like to enter it manually?"
+	read answer
+ 	if [ "$answer" != "y" ]; then 
+        	exit 1
+	else
+ 		while true; do
+   			echo "provide the root partition address. eg. 'dev/sdx2'"
+   			read id
+      			ROOT_UUID=$(blkid -s UUID -o value "$id" | head -n 1)
+      			if [ ! -z "$ROOT_UUID" -a "$ROOT_UUID" != " " ]; then
+			        break
+			fi
+	fi
+else
+	echo "Root UUID ($ROOT_UUID) successfully fetched."
+fi
 
 echo "Creating arch.conf and fallback-arch.conf..."
 # Create arch.conf (standard boot entry)
