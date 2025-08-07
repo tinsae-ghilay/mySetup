@@ -1,5 +1,43 @@
 #!/bin/bash
 echo "Inside chroot. Continuing configuration..."
+
+# now host name, root and user data
+echo "please provide host name"
+read HOSTNAME_INPUT
+
+# user name
+echo "please provide user name"
+read USERNAME_INPUT
+
+# root password
+echo "should there be root password? y for yes (recomended no, thus disabling root login"
+read response
+if [ "$response" = "y" ]; then
+	while true; do
+		echo "Enter desired root password: " 
+		read -s ROOT_PASS
+		echo "Confirm root password: " 
+		read -s ROOT_PASS_CONFIRM
+		if [[ "$ROOT_PASS" == "$ROOT_PASS_CONFIRM" ]]; then
+  	  		break
+  		else
+  	  		echo "Passwords do not match. Please try again."
+  		fi
+	done
+fi
+
+# user password
+while true; do
+	echo "Enter password for user '$USERNAME_INPUT': " 
+	read -s USER_PASS
+	echo "Confirm user password: " 
+	read -s USER_PASS_CONFIRM
+  	if [[ "$USER_PASS" == "$USER_PASS_CONFIRM" ]]; then
+    		break
+  	else
+    		echo "Passwords do not match. Please try again."
+  	fi
+done
     
 # enable parallel downloads
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
