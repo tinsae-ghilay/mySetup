@@ -47,7 +47,7 @@ reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/
 # ---------------------------------------------------------------------------------
 # root partition path
 echo "please provide path to root partition"
-read PATH
+read ROOT_PATH
 
 echo "--- Starting Arch Linux Hyprland Installation Script with systemd-boot and greetd ---"
 
@@ -80,27 +80,24 @@ curl https://raw.githubusercontent.com/tinsae-ghilay/mySetup/refs/heads/main/set
 # Chroot into the new system and continue configuration ---
 echo "Entering chroot environment..."
 arch-chroot /mnt /bin/bash <<EOF_CHROOT
-    echo "Inside chroot. Continuing configuration..."
-	chmod u+x setup.sh
- 	./setup.sh "$PATH"
-    
+echo "Inside chroot. Continuing configuration..."
+chmod u+x setup.sh
+./setup.sh "$ROOT_PATH"
 EOF_CHROOT
 
 # --- 4. Final Steps (Outside Chroot) ---
 echo "--- Arch Linux Hyprland Installation COMPLETE! ---"
-echo "You can now unmount your partitions and reboot into your new system."
-echo "Example commands: umount -R /mnt; reboot"
 echo ""
 echo "--- Post-Reboot Steps (Run these as your NEW USER after first login) ---"
 echo "1. Log in with your new user in the TTY (or the graphical greetd if it launches)."
 echo "   - If greetd launches but you can't log in, switch to TTY2-7 (Ctrl+Alt+F2-F7) and login there."
 
-echo "should we unmount drives and reboot?"
+echo "You can now unmount your partitions and reboot into your new system.Unmount and reboot?"
 read response
-
 if [ "$response" == "y" ]; then
 	umount -R /mnt
 	echo "unmounted, now rebooting"
 	reboot
 fi
+echo "to unmount : umount -R /mnt"
 
