@@ -150,6 +150,7 @@ if [ -z "$ROOT_UUID" ]; then
    			read id
       			ROOT_UUID=$(blkid -s UUID -o value "$id" | head -n 1)
       			if [ ! -z "$ROOT_UUID" -a "$ROOT_UUID" != " " ]; then
+           echo "found UUID = $ROOT_UUID."
 			        break
 			fi
    		done
