@@ -44,8 +44,10 @@ else
 fi
 
 reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
-pacman -Syy
 # ---------------------------------------------------------------------------------
+# root partition path
+echo "please provide path to root partition"
+read PATH
 
 echo "--- Starting Arch Linux Hyprland Installation Script with systemd-boot and greetd ---"
 
@@ -73,9 +75,6 @@ echo "Generating fstab..."
 genfstab -U /mnt >> /mnt/etc/fstab || { echo "fstab generation failed. Exiting."; exit 1; }
 echo "fstab generated."
 
-echo "please provide path to root partition"
-read PATH
-
 curl https://raw.githubusercontent.com/tinsae-ghilay/mySetup/refs/heads/main/setup.sh -o /mnt/setup.sh
 
 # Chroot into the new system and continue configuration ---
@@ -83,7 +82,7 @@ echo "Entering chroot environment..."
 arch-chroot /mnt /bin/bash <<EOF_CHROOT
     echo "Inside chroot. Continuing configuration..."
 	chmod u+x setup.sh
- 	./serup.sh "$PATH"
+ 	./setup.sh "$PATH"
     
 EOF_CHROOT
 
