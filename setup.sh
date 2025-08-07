@@ -5,7 +5,7 @@ set -e
 echo "Inside chroot. Continuing configuration..."
 
 # root password
-echo "should there be root password? y for yes (recomended no, thus disabling root login"
+echo "should there be root password? y for yes (recomended no, thus disabling root login)"
 read response
 if [ "$response" = "y" ]; then
 	passwd
@@ -42,18 +42,22 @@ echo "System locale, timezone, and keyboard layout set."
 echo "Please provide the hostname:"
 read HOSTNAME_INPUT
 
-# setting hostname
+# add host name
 echo "$HOSTNAME_INPUT" > /etc/hostname
-echo "127.0.0.1    localhost" >> /etc/hosts
-echo "::1          localhost" >> /etc/hosts
-echo "127.0.1.1    $HOSTNAME_INPUT.localdomain $HOSTNAME_INPUT" >> /etc/hosts
-echo "Hostname set to $HOSTNAME_INPUT."
 
+# setting hostname
+cat <<EOF > /etc/hosts
+127.0.0.1    localhost
+::1          localhost
+127.0.1.1    $HOSTNAME_INPUT.localdomain $HOSTNAME_INPUT
+EOF
+
+echo "Hosts file edited:"
 
 # Create user and set password
 echo "please provide user name"
 read USERNAME_INPUT
-useradd -m -G wheel,lp,power "$USERNAME_INPUT" || { echo "User creation failed"; }
+useradd -m -G wheel,lp,power "$USERNAME_INPUT" || { echo "User creation failed"; exit 1; }
 passwd "$USERNAME_INPUT"
 echo "User $USERNAME_INPUT created and password set."
 
@@ -65,7 +69,7 @@ echo "User $USERNAME_INPUT added to sudoers."
 echo "Enabling Multilib repository..."
 # Uncomment the [multilib] section in pacman.conf
 sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf || { echo "Multilib enablement failed."; }
-pacman -Sy --needed # Sync package databases after enabling multilib
+pacman -Sy --needed --noconfirm # Sync package databases after enabling multilib
 echo "Multilib enabled. and synced"
 
 # Install Hyprland and all other packages ---
@@ -197,4 +201,4 @@ EOL_GREETD_CONFIG
 echo "copying config files"
 git clone https://github.com/tinsae-ghilay/mySetup.git /home/$USERNAME_INPUT/.config && echo "---- DONE CLONING DOT FILES! ----" || { echo "looks like config will have to be cloned manualy !"; }
 # just incase, setting ownership of config files to user
-chown -cR $USERNAME_INPUT /home/$USERNAME_INPUT/.config
+chown -cR "$USERNAME_INPUT" /home/"$USERNAME_INPUT"/.config
