@@ -77,13 +77,11 @@ echo "fstab generated."
 
 curl https://raw.githubusercontent.com/tinsae-ghilay/mySetup/refs/heads/main/setup.sh -o /mnt/setup.sh
 
+chmod +x /mnt/setup.sh
+
 # Chroot into the new system and continue configuration ---
 echo "Entering chroot environment..."
-arch-chroot /mnt /bin/bash <<EOF_CHROOT
-echo "Inside chroot. Continuing configuration..."
-chmod u+x setup.sh
-./setup.sh "$ROOT_PATH"
-EOF_CHROOT
+arch-chroot /mnt /setup.sh
 
 # --- 4. Final Steps (Outside Chroot) ---
 echo "--- Arch Linux Hyprland Installation COMPLETE! ---"
