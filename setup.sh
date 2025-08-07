@@ -4,18 +4,17 @@ set -e
 
 echo "Inside chroot. Continuing configuration..."
 
-# now host name, root and user data
-echo "please provide host name"
-read HOSTNAME_INPUT
-
 # root password
 echo "should there be root password? y for yes (recomended no, thus disabling root login"
 read response
 if [ "$response" = "y" ]; then
 	passwd
+else
+	# since root is desabled by default if no password is provided
+ 	# this can easily be enabled later with the passwd command
+	echo "Root login disabled"
 fi
 
-    
 # enable parallel downloads
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
@@ -27,7 +26,7 @@ locale-gen
 echo "LANG=en_GB.UTF-8" > /etc/locale.conf
 
 # may also need to be interactive, since I may have diferent layout on some laptops
-echo "Enter keyboard map example de"
+echo "Enter keyboard map (e.g., de):"
 read KEYMAP
 echo "KEYMAP=$KEYMAP" > /etc/vconsole.conf # Console keyboard layout
 
@@ -39,22 +38,17 @@ hwclock --systohc # Set hardware clock to system time
 
 echo "System locale, timezone, and keyboard layout set."
 
-# Hostname ---
+# now host name, root and user data
+echo "Please provide the hostname:"
+read HOSTNAME_INPUT
+
+# setting hostname
 echo "$HOSTNAME_INPUT" > /etc/hostname
 echo "127.0.0.1    localhost" >> /etc/hosts
 echo "::1          localhost" >> /etc/hosts
 echo "127.0.1.1    $HOSTNAME_INPUT.localdomain $HOSTNAME_INPUT" >> /etc/hosts
 echo "Hostname set to $HOSTNAME_INPUT."
 
-# User Creation and Sudoers 
-  # Check if a root password was provided
-  echo "Setting root password" 
-if [[ -n "$ROOT_PASS" ]]; then
-    echo "root:$ROOT_PASS" | chpasswd || { echo "Root password setup failed. Exiting chroot."; exit 1; }
-    echo "Root password set."
-else
-    echo "Root password was not provided. Skipping."
-fi
 
 # Create user and set password
 echo "please provide user name"
@@ -65,50 +59,50 @@ echo "User $USERNAME_INPUT created and password set."
 
 # allow sudo access to user
 sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //g' /etc/sudoers || { echo "Sudoers modification failed"; }
-echo "User $USERNAME_INPUT created and added to sudoers."
+echo "User $USERNAME_INPUT added to sudoers."
 
 #  Enable Multilib ---
 echo "Enabling Multilib repository..."
 # Uncomment the [multilib] section in pacman.conf
 sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf || { echo "Multilib enablement failed."; }
-pacman -Sy # Sync package databases after enabling multilib
+pacman -Sy --needed # Sync package databases after enabling multilib
 echo "Multilib enabled. and synced"
 
 # Install Hyprland and all other packages ---
 echo "Installing Hyprland and all specified packages..."
 
 # hyprecosystem
-pacman -S --needed --noconfirm hyprland hypridle hyprlock hyprpaper hyprshot hyprpolkitagent || { echo "Hyperecho apps installation failed."; }
+pacman -S --needed --noconfirm hyprland hypridle hyprlock hyprpaper hyprshot hyprpolkitagent hyprsunset && echo "--- DONE ---"
 
 # xdg desktop portal
-pacman -S --needed --noconfirm xdg-desktop-portal-hyprland xdg-desktop-portal-gtk || { echo "XDG istall failed."; }
+pacman -S --needed --noconfirm xdg-desktop-portal-hyprland xdg-desktop-portal-gtk && echo "--- DONE ---"
 
 # qt wayland support
-pacman -S --needed --noconfirm qt5-wayland qt6-wayland || { echo "QT packages install failed"; }
+pacman -S --needed --noconfirm qt5-wayland qt6-wayland && echo "--- DONE ---"
 
 # audio
-pacman -S --needed --noconfirm pipewire wireplumber pipewire-pulse pipewire-alsa pipewire-jack || { echo "Installing audio tools failed."; }
+pacman -S --needed --noconfirm pipewire wireplumber pipewire-pulse pipewire-alsa pipewire-jack && echo "--- DONE ---"
 
 # msic needed
-pacman -S --needed --noconfirm swaync kitty wofi firefox code spotify-launcher waybar wl-clip-persist || { echo "Error installing sway kitty and co."; }
+pacman -S --needed --noconfirm swaync kitty wofi firefox code spotify-launcher waybar wl-clip-persist && echo "--- DONE ---"
 
 # print bluetooth and brightness services
-pacman -S --needed --noconfirm brightnessctl cups cups-filters gutenprint bluez bluez-utils blueman bluez-cups || { echo "Error installing print, bluetooth and brightness control failsed."; }
+pacman -S --needed --noconfirm brightnessctl cups cups-filters gutenprint bluez bluez-utils blueman bluez-cups && echo "--- DONE ---"
 
 # gnome apps
-pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look gnome-keyring evince || { echo "Installing gnome+ apps failed."; }
+pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look gnome-keyring evince && echo "--- DONE ---"
 
 # android and ntfs support
-pacman -S --needed --noconfirm ntfs-3g android-udev gvfs scrcpy || { echo "error installing android tools."; }
+pacman -S --needed --noconfirm ntfs-3g android-udev gvfs scrcpy && echo "--- DONE ---"
 
 # fonts
-pacman -S --needed --noconfirm ttf-dejavu noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-liberation ttf-roboto cantarell-fonts ttf-fira-code ttf-hack nerd-fonts-jetbrains-mono adobe-source-code-pro-fonts || { echo "Error installing fonts."; }
+pacman -S --needed --noconfirm ttf-dejavu noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-liberation ttf-roboto cantarell-fonts ttf-fira-code ttf-hack nerd-fonts-jetbrains-mono adobe-source-code-pro-fonts && echo "--- DONE ---"
 
 # X11 support
-pacman -S --needed --noconfirm xorg-xwayland || { echo "error installing xwayland support."; }
+pacman -S --needed --noconfirm xorg-xwayland && echo "--- DONE ---"
 
 # Display Manager (greetd with Regreet)
-pacman -S --needed --noconfirm greetd greetd-tuigreet || { echo "Error installing greetd."; }
+pacman -S --needed --noconfirm greetd greetd-tuigreet && echo "--- DONE ---"
 
 
 echo "all packages installed."
@@ -125,7 +119,7 @@ systemctl enable greetd.service
 
 echo "Services enabled."
 
-# --- 3.8. systemd-boot Bootloader Installation ---
+# systemd-boot Bootloader Installation ---
 echo "Installing systemd-boot bootloader..."
 bootctl install || { echo "bootctl install failed."; }
 
@@ -148,12 +142,13 @@ if [ -z "$ROOT_UUID" ]; then
         	exit 1
 	else
  		while true; do
-   			echo "provide the root partition address. eg. 'dev/sdx2'"
+   			echo "Provide the root partition device path (e.g., /dev/sdx2):"
    			read id
       			ROOT_UUID=$(blkid -s UUID -o value "$id" | head -n 1)
       			if [ ! -z "$ROOT_UUID" -a "$ROOT_UUID" != " " ]; then
 			        break
 			fi
+   		done
 	fi
 else
 	echo "Root UUID ($ROOT_UUID) successfully fetched."
@@ -181,7 +176,7 @@ EOL_FALLBACK
 
 echo "systemd-boot configured with arch.conf and fallback-arch.conf."
 
-# --- 3.9. Configure greetd and TuiGreet ---
+# Configure greetd and TuiGreet ---
 echo "Configuring greetd and TuiGreet..."
 
 # Create greetd config directory if it doesn't exist
