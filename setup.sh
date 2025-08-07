@@ -1,4 +1,7 @@
 #!/bin/bash
+# early exit on error
+set -e
+
 echo "Inside chroot. Continuing configuration..."
 
 # now host name, root and user data
@@ -56,18 +59,18 @@ fi
 # Create user and set password
 echo "please provide user name"
 read USERNAME_INPUT
-useradd -m -G wheel,lp,power "$USERNAME_INPUT" || { echo "User creation failed. Exiting chroot."; exit 1; }
-passwd "$USERNAME_INPUT
+useradd -m -G wheel,lp,power "$USERNAME_INPUT" || { echo "User creation failed"; }
+passwd "$USERNAME_INPUT"
 echo "User $USERNAME_INPUT created and password set."
 
 # allow sudo access to user
-sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //g' /etc/sudoers || { echo "Sudoers modification failed. Exiting chroot."; exit 1; }
+sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //g' /etc/sudoers || { echo "Sudoers modification failed"; }
 echo "User $USERNAME_INPUT created and added to sudoers."
 
 #  Enable Multilib ---
 echo "Enabling Multilib repository..."
 # Uncomment the [multilib] section in pacman.conf
-sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf || { echo "Multilib enablement failed. Exiting chroot."; exit 1; }
+sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf || { echo "Multilib enablement failed."; }
 pacman -Sy # Sync package databases after enabling multilib
 echo "Multilib enabled. and synced"
 
@@ -75,37 +78,37 @@ echo "Multilib enabled. and synced"
 echo "Installing Hyprland and all specified packages..."
 
 # hyprecosystem
-pacman -S --needed --noconfirm hyprland hypridle hyprlock hyprpaper hyprshot hyprpolkitagent || { echo "Hyperecho apps installation failed. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm hyprland hypridle hyprlock hyprpaper hyprshot hyprpolkitagent || { echo "Hyperecho apps installation failed."; }
 
 # xdg desktop portal
-pacman -S --needed --noconfirm xdg-desktop-portal-hyprland xdg-desktop-portal-gtk || { echo "XDG istall failed."; exit 1; }
+pacman -S --needed --noconfirm xdg-desktop-portal-hyprland xdg-desktop-portal-gtk || { echo "XDG istall failed."; }
 
 # qt wayland support
-pacman -S --needed --noconfirm qt5-wayland qt6-wayland || { echo "QT packages install failed. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm qt5-wayland qt6-wayland || { echo "QT packages install failed"; }
 
 # audio
-pacman -S --needed --noconfirm pipewire wireplumber pipewire-pulse pipewire-alsa pipewire-jack || { echo "Installing audio tools failed. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm pipewire wireplumber pipewire-pulse pipewire-alsa pipewire-jack || { echo "Installing audio tools failed."; }
 
 # msic needed
-pacman -S --needed --noconfirm swaync kitty wofi firefox code spotify-launcher waybar wl-clip-persist || { echo "Error installing sway kitty and co. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm swaync kitty wofi firefox code spotify-launcher waybar wl-clip-persist || { echo "Error installing sway kitty and co."; }
 
 # print bluetooth and brightness services
-pacman -S --needed --noconfirm brightnessctl cups cups-filters gutenprint bluez bluez-utils blueman bluez-cups || { echo "Error installing print, bluetooth and brightness control failsed. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm brightnessctl cups cups-filters gutenprint bluez bluez-utils blueman bluez-cups || { echo "Error installing print, bluetooth and brightness control failsed."; }
 
 # gnome apps
-pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look gnome-keyring evince || { echo "Installing gnome+ apps failed. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look gnome-keyring evince || { echo "Installing gnome+ apps failed."; }
 
 # android and ntfs support
-pacman -S --needed --noconfirm ntfs-3g android-udev gvfs scrcpy || { echo "error installing android tools. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm ntfs-3g android-udev gvfs scrcpy || { echo "error installing android tools."; }
 
 # fonts
 pacman -S --needed --noconfirm ttf-dejavu noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-liberation ttf-roboto cantarell-fonts ttf-fira-code ttf-hack nerd-fonts-jetbrains-mono adobe-source-code-pro-fonts || { echo "Error installing fonts."; }
 
 # X11 support
-pacman -S --needed --noconfirm xorg-xwayland || { echo "error installing xwayland support. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm xorg-xwayland || { echo "error installing xwayland support."; }
 
 # Display Manager (greetd with Regreet)
-pacman -S --needed --noconfirm greetd greetd-tuigreet || { echo "Error installing greetd. Exiting chroot."; exit 1; }
+pacman -S --needed --noconfirm greetd greetd-tuigreet || { echo "Error installing greetd."; }
 
 
 echo "all packages installed."
@@ -124,7 +127,7 @@ echo "Services enabled."
 
 # --- 3.8. systemd-boot Bootloader Installation ---
 echo "Installing systemd-boot bootloader..."
-bootctl install || { echo "bootctl install failed. Exiting chroot."; exit 1; }
+bootctl install || { echo "bootctl install failed."; }
 
 # Configure loader.conf for systemd-boot
 echo "Configuring loader.conf..."
@@ -164,7 +167,7 @@ title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
 initrd  /initramfs-linux.img
-options root=UUID=$ROOT_UUID rw vga=current loglevel=3 rd.udev.log_level=3 nvidia_drm.modset=1 fsck.mode=skip quiet splash
+options root=UUID=$ROOT_UUID rw loglevel=3 rd.udev.log_level=3 nvidia_drm.modset=1 fsck.mode=skip quiet splash
 EOL_ARCH
 
 # Create fallback-arch.conf (fallback boot entry)
@@ -173,7 +176,7 @@ title   Arch Linux (Fallback)
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
 initrd  /initramfs-linux-fallback.img
-options root=UUID=$ROOT_UUID rw vga=current loglevel=3 rd.udev.log_level=3 nvidia_drm.modset=1 fsck.mode=skip quiet splash
+options root=UUID=$ROOT_UUID rw loglevel=3 rd.udev.log_level=3 nvidia_drm.modset=1 fsck.mode=skip quiet splash
 EOL_FALLBACK
 
 echo "systemd-boot configured with arch.conf and fallback-arch.conf."
