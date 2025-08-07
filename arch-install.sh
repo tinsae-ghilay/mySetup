@@ -47,7 +47,7 @@ reflector --country 'Austria' --age 24 --protocol https --sort rate --save /etc/
 pacman -Syy
 # ---------------------------------------------------------------------------------
 
-# now host, root and user data
+# now host name, root and user data
 echo "please provide host name"
 read HOSTNAME_INPUT
 
@@ -55,10 +55,9 @@ read HOSTNAME_INPUT
 echo "please provide user name"
 read USERNAME_INPUT
 
-echo "shoul there be root password? y for yes"
-read response
-
 # root password
+echo "should there be root password? y for yes (recomended no, thus disabling root login"
+read response
 if [ "$response" = "y" ]; then
 	while true; do
 		echo "Enter desired root password: " 
@@ -88,11 +87,9 @@ done
 
 echo "--- Starting Arch Linux Hyprland Installation Script with systemd-boot and greetd ---"
 
-# --- 1. Pacstrap the base system and core packages ---
 echo "Installing base system and essential packages..."
 
 # Core packages for a functioning Arch system with initial drivers and networking.
-
 PACSTRAP_PKGS=(
     base linux linux-firmware intel-ucode sof-firmware \
     mesa nvidia nvidia-utils lib32-nvidia-utils vulkan-intel intel-media-driver \
@@ -109,12 +106,32 @@ echo "Base system and essential packages installed. copying mirrors to new syste
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 echo "mirror lists copied to new system"
 
-# --- 2. Generate fstab ---
+# Generate fstab ---
 echo "Generating fstab..."
 genfstab -U /mnt >> /mnt/etc/fstab || { echo "fstab generation failed. Exiting."; exit 1; }
 echo "fstab generated."
 
-# --- 3. Chroot into the new system and continue configuration ---
+# get root UUID befor entering chroot environment
+# because I had trouble with it inside chroot (returning empty)
+ROOT_UUID=$(blkid -s UUID -o value "$(findmnt -no SOURCE /)" | head -n 1)
+# make sure we have it
+if [ -z "$ROOT_UUID" ]; then
+        echo "Could not find root partition UUID. would you like to enter it manually?"
+	read answer
+ 	if [ "$answer" != "y" ]; then 
+        	exit 1
+	else
+ 		while true; do
+   			read ROOT_UUID
+      			if [ ! -z "$ROOT_UUID" -a "$ROOT_UUID" != " " ]; then
+			        break
+			fi
+	fi
+else
+	echo "Root UUID ($ROOT_UUID) successfully fetched.
+fi
+
+# Chroot into the new system and continue configuration ---
 echo "Entering chroot environment..."
 arch-chroot /mnt /bin/bash <<EOF_CHROOT
     echo "Inside chroot. Continuing configuration..."
@@ -122,7 +139,7 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     # enable parallel downloads
     sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
-    # --- 3.1. System Locale, Time, and Keyboard Layout ---
+    # System Locale, Time, and Keyboard Layout ---
     echo "Setting system locale, timezone, and keyboard layout..."
     # Set locale to en_GB.UTF-8
     echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
@@ -136,14 +153,14 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
 
     echo "System locale, timezone, and keyboard layout set."
 
-    # --- 3.2. Hostname ---
+    # Hostname ---
     echo "$HOSTNAME_INPUT" > /etc/hostname
     echo "127.0.0.1    localhost" >> /etc/hosts
     echo "::1          localhost" >> /etc/hosts
     echo "127.0.1.1    $HOSTNAME_INPUT.localdomain $HOSTNAME_INPUT" >> /etc/hosts
     echo "Hostname set to $HOSTNAME_INPUT."
 
-    # --- 3.3. User Creation and Sudoers 
+    # User Creation and Sudoers 
 			# Check if a root password was provided
 			echo "Setting root password" 
     if [[ -n "$ROOT_PASS" ]]; then
@@ -152,24 +169,24 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     else
         echo "Root password was not provided. Skipping."
     fi
-    # --- 3.4 user password
+    
     # Create user and set password using chpasswd
     useradd -m -G wheel,lp,power "$USERNAME_INPUT" || { echo "User creation failed. Exiting chroot."; exit 1; }
     echo "$USERNAME_INPUT:$USER_PASS" | chpasswd || { echo "User password setup failed. Exiting chroot."; exit 1; }
     echo "User $USERNAME_INPUT created and password set."
 
-    # Uncomment wheel group in sudoers file to allow sudo access
+    # allow sudo access to user
     sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //g' /etc/sudoers || { echo "Sudoers modification failed. Exiting chroot."; exit 1; }
     echo "User $USERNAME_INPUT created and added to sudoers."
 
-    # --- 3.5. Enable Multilib ---
+    #  Enable Multilib ---
     echo "Enabling Multilib repository..."
     # Uncomment the [multilib] section in pacman.conf
     sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf || { echo "Multilib enablement failed. Exiting chroot."; exit 1; }
     pacman -Sy # Sync package databases after enabling multilib
     echo "Multilib enabled. and synced"
 
-    # --- 3.6. Install Hyprland and all other packages ---
+    # Install Hyprland and all other packages ---
     echo "Installing Hyprland and all specified packages..."
     
     # hyprecosystem
@@ -228,17 +245,17 @@ arch-chroot /mnt /bin/bash <<EOF_CHROOT
     echo "Configuring loader.conf..."
     cat <<EOL_LOADER > /boot/loader/loader.conf
 default  arch
-timeout  3
-console-mode max # For fullscreen console
-editor   yes      # Allow editing kernel parameters at boot
+timeout  1
+console-mode keep
+editor true
 EOL_LOADER
 
     # Get UUID of the root partition for boot entries
-    ROOT_UUID=$(blkid -s UUID -o value "$(findmnt -no SOURCE /)" | head -n 1)
-    if [ -z "$ROOT_UUID" ]; then
-        echo "Could not find root partition UUID. Cannot create boot entries. Exiting chroot."
-        exit 1
-    fi
+    # ROOT_UUID=$(blkid -s UUID -o value "$(findmnt -no SOURCE /)" | head -n 1)
+    # if [ -z "$ROOT_UUID" ]; then
+    #     echo "Could not find root partition UUID. Cannot create boot entries. Exiting chroot."
+    #     exit 1
+    # fi
 
     echo "Creating arch.conf and fallback-arch.conf..."
     # Create arch.conf (standard boot entry)
