@@ -100,7 +100,7 @@ pacman -S --needed --noconfirm loupe gnome-text-editor nautilus nwg-look gnome-k
 pacman -S --needed --noconfirm ntfs-3g android-udev gvfs scrcpy && echo "--- DONE ---"
 
 # fonts
-pacman -S --needed --noconfirm ttf-dejavu noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-liberation ttf-roboto cantarell-fonts ttf-fira-code ttf-hack nerd-fonts-jetbrains-mono adobe-source-code-pro-fonts && echo "--- DONE ---"
+pacman -S --needed --noconfirm ttf-dejavu noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-liberation ttf-roboto cantarell-fonts ttf-fira-code ttf-hack ttf-jetbrains-mono-nerd adobe-source-code-pro-fonts && echo "--- DONE ---"
 
 # X11 support
 pacman -S --needed --noconfirm xorg-xwayland && echo "--- DONE ---"
@@ -130,14 +130,14 @@ bootctl install || { echo "bootctl install failed."; }
 # Configure loader.conf for systemd-boot
 echo "Configuring loader.conf..."
 cat <<EOL_LOADER > /boot/loader/loader.conf
-default  arch
-timeout  1
+default  @saved
+timeout  3
 console-mode keep
 editor true
 EOL_LOADER
 
 # Get UUID of the root partition for boot entries
-ROOT_UUID=$(blkid -s UUID -o value "$1" | head -n 1)
+ROOT_UUID=$(blkid -s UUID -o value "$(findmnt -n -o SOURCE /)")
 # make sure we have it
 if [ -z "$ROOT_UUID" ]; then
         echo "Could not find root partition UUID. would you like to enter it manually?"
@@ -189,9 +189,6 @@ mkdir -p /etc/greetd
 
 # Create /etc/greetd/config.toml (greetd's main config)
 cat <<EOL_GREETD_CONFIG > /etc/greetd/config.toml
-
-[terminal]
-vt = 7 # Common for graphical greeters, ensures a clean VT
 
 [default_session]
 command = "tuigreet --time --asterisks --cmd Hyprland"
